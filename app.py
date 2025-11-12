@@ -9,7 +9,9 @@ weather_classes = ['clear', 'cloudy', 'drizzly', 'foggy', 'hazey', 'misty', 'rai
 
 
 def load_model(model_path='model/model.pkl'):
-    return pickle.load(open(model_path, 'rb'))
+    # Added because the opened file was not being closed by pickle
+    with open(model_path, 'rb') as f:
+        return pickle.load(f)
 
 
 def classify_weather(features):
