@@ -38,6 +38,10 @@ class TestModelAppIntegration(unittest.TestCase):
 
 
     # Ensure that classification is in valid classes, provide an error message if not.
+<<<<<<< HEAD
+=======
+
+>>>>>>> parent of cafe8bd (Wrote tests and fixed some bugs.)
 
 if __name__ == '__main__':
     unittest.main()
