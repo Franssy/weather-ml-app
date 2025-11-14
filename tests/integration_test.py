@@ -37,6 +37,11 @@ class TestModelAppIntegration(unittest.TestCase):
         found = any(weather in html_text for weather in valid_classes)
 
 
+
+
+
+
+
     # Ensure that classification is in valid classes, provide an error message if not
 
 if __name__ == '__main__':
