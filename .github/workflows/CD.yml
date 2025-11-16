@@ -38,11 +38,13 @@ jobs:
 
       - name: Download built image
         uses: actions/download-artifact@v4
-        with:
-          name: built-image
-          path: .
+#        with:
+#          name: built-image
+#          path: .
       - name: Load Docker image
         run: docker load -i image.tar
+      - name: Load Docker image
+        run: docker images
 
       - name: Log in to DockerHub
         uses: docker/login-action@v3
