@@ -10,10 +10,8 @@ on:
     branches: [ "main" ]
 
 env:
-  # Use docker.io for Docker Hub if empty
-  REGISTRY: ghcr.io
-  # github.repository as <account>/<repo>
-  IMAGE_NAME: ${{ github.repository }}
+  REGISTRY: ${{ env.DH_REGISTRY }}
+  IMAGE_NAME: ${{ env.IMAGE_NAME }}
 
 
 jobs:
@@ -63,4 +61,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.DH_REGISTRY }}/${{ env.IMAGE_NAME }}:latest # Replace with your details
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest # Replace with your details
