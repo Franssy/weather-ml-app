@@ -106,7 +106,6 @@ echo "---"
 echo "Deployment Summary (wait a moment for resources to spin up):"
 kubectl get all -l app=${APP_NAME}
 
-
 NODE_PORT=$(kubectl get svc weather-app-service -o=jsonpath='{.spec.ports[*].nodePort}')
 
 sleep 20
