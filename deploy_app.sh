@@ -47,11 +47,7 @@ echo ""
 echo "## Starting Minikube..."
 minikube start
 
-kubectl get sa
-
-kubectl get sa
-
-kubectl get sa
+sleep 5 # Waits for 5 seconds
 
 IMAGE_NAME="franssy/weather-predictor:1.0" # e.g., myuser/my-web-app:v1
 APP_NAME="weather-app"
@@ -87,9 +83,6 @@ kubectl expose deployment ${APP_NAME} \
     --target-port=${CONTAINER_PORT} \
     --labels="app=${APP_NAME}"
 
-
-NODE_PORT=$(kubectl get svc weather-app-service -o=jsonpath='{.spec.ports[*].nodePort}')
-
 if [ $? -ne 0 ]; then
     echo "ERROR: Service creation failed. Exiting."
     exit 1
@@ -113,6 +106,10 @@ echo "---"
 echo "Deployment Summary (wait a moment for resources to spin up):"
 kubectl get all -l app=${APP_NAME}
 
+
+NODE_PORT=$(kubectl get svc weather-app-service -o=jsonpath='{.spec.ports[*].nodePort}')
+
+sleep 20
 kubectl port-forward --address 0.0.0.0 service/weather-app-service "${NODE_PORT}":"${SERVICE_PORT}"
 
 echo "Script finished successfully."
