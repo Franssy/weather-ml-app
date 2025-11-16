@@ -42,7 +42,7 @@ jobs:
 #          name: built-image
 #          path: .
       - name: List Files
-        run: ls -R
+        run: ls -Ra
       - name: Load Docker image
         run: docker load -i image.tar
       - name: Load Docker image
