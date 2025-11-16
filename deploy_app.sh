@@ -113,7 +113,7 @@ echo "---"
 echo "Deployment Summary (wait a moment for resources to spin up):"
 kubectl get all -l app=${APP_NAME}
 
-kubect port-forward --address 0.0.0.0 service/weather-app-service "${NODE_PORT}":"${SERVICE_PORT}"
+kubectl port-forward --address 0.0.0.0 service/weather-app-service "${NODE_PORT}":"${SERVICE_PORT}"
 
 echo "Script finished successfully."
 
