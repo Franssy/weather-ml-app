@@ -62,7 +62,9 @@ jobs:
         run: docker save -o image.tar ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
       - name: Upload image artifact
-        uses: actions/upload-artifact@v4.6.2
+        uses: actions/upload-artifact@v4
         with:
           name: built-image
           path: image.tar
+      - name: List Files
+        run: echo ${{ github.run_id }}
