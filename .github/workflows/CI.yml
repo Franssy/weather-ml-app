@@ -66,5 +66,4 @@ jobs:
         with:
           name: built-image
           path: image.tar
-      - name: List Files
-        run: echo ${{ github.run_id }}
+          run-id: ${{ github.run_id }}
