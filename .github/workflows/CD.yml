@@ -38,8 +38,8 @@ jobs:
 
       - name: Download built image
         uses: actions/download-artifact@v4
-#        with:
-#          name: built-image
+        with:
+          name: built-image
 #          path: .
       - name: List Files
         run: ls -Ra
