@@ -10,8 +10,8 @@ on:
     branches: [ "main" ]
 
 env:
-  REGISTRY: ${{ env.DH_REGISTRY }}
-  IMAGE_NAME: ${{ env.IMAGE_NAME }}
+  REGISTRY: franssy
+  IMAGE_NAME: weather-predictor
 
 
 jobs:
