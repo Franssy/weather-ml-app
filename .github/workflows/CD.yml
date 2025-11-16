@@ -37,10 +37,10 @@ jobs:
 #        run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
       - name: Download built image
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v4.2.1
         with:
-          name: built-image.zip
-#          path: .
+          name: built-image
+          path: image.tar
       - name: List Files
         run: ls -Ra
       - name: Load Docker image
