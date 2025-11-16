@@ -49,7 +49,7 @@ minikube start
 
 sleep 5 # Waits for 5 seconds
 
-IMAGE_NAME="franssy/weather-predictor:1.0" # e.g., myuser/my-web-app:v1
+IMAGE_NAME="franssy/weather-predictor:latest" # e.g., myuser/my-web-app:v1
 APP_NAME="weather-app"
 CONTAINER_PORT=5000
 SERVICE_PORT=8080
