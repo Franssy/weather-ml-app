@@ -46,6 +46,7 @@ jobs:
         with:
           name: built-image
           path: image.tar
+          run-id: ${{ github.event.workflow_run.id }}
       - name: Load Docker image
         run: docker load -i image.tar
       - name: Load Docker image
