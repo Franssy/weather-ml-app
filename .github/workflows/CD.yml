@@ -23,7 +23,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-      id-token: write
+      actions: read
 
     steps:
 
@@ -40,7 +40,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: built-image
-
+          path: .
       - name: Load Docker image
         run: docker load -i image.tar
 
