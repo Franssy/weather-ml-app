@@ -1,4 +1,5 @@
-import unittest, re
+import unittest
+import re
 from app import app  # Import your Flask app instance
 
 
@@ -46,6 +47,7 @@ class TestModelAppIntegration(unittest.TestCase):
 
         # Ensure that classification is in valid classes, provide an error message if not.
         self.assertTrue(found, f"Expected one of {valid_classes} in response, but got:\n{html_text}")
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,4 +1,5 @@
-import unittest, re
+import unittest
+import re
 from app import app
 
 
@@ -11,7 +12,6 @@ class TestAppSmoke(unittest.TestCase):
     def test_prediction_route_success(self):
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200, "Expected route '/' to return 200 OK")
-
 
     # Complete the function below to test a form is rendered
     def test_get_form(self):
