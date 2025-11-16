@@ -39,7 +39,7 @@ jobs:
       - name: Download built image
         uses: actions/download-artifact@v5
         with:
-          name: built-image
+          name: built-image.zip
 #          path: .
       - name: List Files
         run: ls -Ra
