@@ -1,192 +1,74 @@
 ---
-- name: Setup and Deploy App on Minikube Cluster
+- name: Setup Kubernetes (kubectl + minikube) and deploy weather app
   hosts: localhost
   become: yes
   vars:
-
-    app_name: weather-app
-    docker_image: franssy/weather-predictor:1.0
-    replicas: 3
-    service_port: 80
-    container_port: 5000
+    kubectl_download_url: "https://dl.k8s.io/release"
+    minikube_download_url: "https://github.com/kubernetes/minikube/releases/latest/download/minikube-linux-amd64"
 
   tasks:
-
-    - name: Install required system packages
-      ansible.builtin.apt: # Or `yum` for RHEL/CentOS
-        name:
-          - curl
-          - gnupg2
-          - software-properties-common
-        state: present
+    - name: Update and upgrade APT packages
+      apt:
         update_cache: yes
+        upgrade: dist
 
-    - name: Download cri-dockerd binary
-      ansible.builtin.get_url:
-        url: "https://github.com/Mirantis/cri-dockerd/releases/download/v{{ cri_dockerd_version }}/cri-dockerd-{{ cri_dockerd_version }}.{{ ansible_architecture }}.tgz"
-        dest: "/tmp/cri-dockerd.tgz"
-        mode: '0644'
-      vars:
-        cri_dockerd_version: "0.3.7" # Specify the desired cri-dockerd version
+    - name: Get latest Kubernetes version
+      shell: "curl -L -s https://dl.k8s.io/release/stable.txt"
+      register: k8s_version
 
-    - name: Extract cri-dockerd
-      ansible.builtin.unarchive:
-        src: "/tmp/cri-dockerd.tgz"
-        dest: "/usr/local/bin/"
-        remote_src: yes
+    - name: Download kubectl binary
+      get_url:
+        url: "{{ kubectl_download_url }}/{{ k8s_version.stdout }}/bin/linux/amd64/kubectl"
+        dest: /tmp/kubectl
+        mode: '0755'
 
-    - name: Create systemd service file for cri-dockerd
-      ansible.builtin.template:
-        src: cri-dockerd.service.j2
-        dest: /etc/systemd/system/cri-dockerd.service
-        mode: '0644'
+    - name: Download kubectl checksum
+      get_url:
+        url: "{{ kubectl_download_url }}/{{ k8s_version.stdout }}/bin/linux/amd64/kubectl.sha256"
+        dest: /tmp/kubectl.sha256
 
-    - name: Enable and start cri-dockerd service
-      ansible.builtin.systemd:
-        name: cri-dockerd
-        enabled: yes
-        state: started
-        daemon_reload: yes
-
-    - name: Verify cri-dockerd installation
-      ansible.builtin.shell: cri-dockerd --version
-      register: cri_dockerd_version_output
-      changed_when: false
-
-    - name: Display cri-dockerd version
-      ansible.builtin.debug:
-        var: cri_dockerd_version_output.stdout_lines
+    - name: Verify kubectl checksum
+      shell: "echo $(cat /tmp/kubectl.sha256) /tmp/kubectl | sha256sum --check"
+      register: checksum_result
+      failed_when: "'OK' not in checksum_result.stdout"
 
     - name: Install kubectl
-      ansible.builtin.shell: |
-        curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
-        chmod +x kubectl
-        mv kubectl /usr/local/bin/
-      args:
-        creates: /usr/local/bin/kubectl
-      become: yes
+      copy:
+        src: /tmp/kubectl
+        dest: /usr/local/bin/kubectl
+        mode: '0755'
 
-    - name: Install conntrack dependency
-      ansible.builtin.apt:
-        name: conntrack
-        state: present
-      become: yes
 
-    - name: Install crictl
-      ansible.builtin.shell: |
-        VERSION="1.30.0" # Use a stable version compatible with K8s 1.34.0
-        ARCH="amd64"
-        curl -L "https://github.com/kubernetes-sigs/cri-tools/releases/download/v${VERSION}/crictl-v${VERSION}-linux-${ARCH}.tar.gz" | sudo tar zx -C /usr/local/bin
-      args:
-        creates: /usr/local/bin/crictl
-      become: yes
+    - name: Download minikube binary
+      get_url:
+        url: "{{ minikube_download_url }}"
+        dest: /tmp/minikube
+        mode: '0755'
 
-    - name: Ensure Docker service is running and enabled
-      ansible.builtin.service:
-        name: docker
-        state: started
-        enabled: yes
-      become: yes
+    - name: Install minikube
+      copy:
+        src: /tmp/minikube
+        dest: /usr/local/bin/minikube
+        mode: '0755'
 
-    - name: Add Ansible user to the Docker group
-      ansible.builtin.user:
-        name: "{{ ansible_user_id }}" # Uses the current Ansible user's ID
-        groups: docker
-        append: yes
-      become: yes
-      register: docker_group_change
-
-      # This task is crucial for group changes to take effect immediately in the same play.
-    - name: Restart play if user was added to docker group
-      ansible.builtin.meta: refresh_inventory
-      when: docker_group_change.changed
-
-    - name: Disable SELinux for Docker
-      ansible.builtin.shell: sudo sysctl fs.protected_regular=0
-
-    # (b) Install Minikube
-    - name: Install Minikube
-      ansible.builtin.shell: |
-        curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-        chmod +x minikube
-        mv minikube /usr/local/bin/
-      args:
-        creates: /usr/local/bin/minikube
-      become: yes
-
-    - name: Delete existing minikube cluster if it uses the wrong driver
-      ansible.builtin.shell: minikube delete
-      register: minikube_delete
-      changed_when: "'minikube cluster was successfully deleted' in minikube_delete.stdout or 'No minikube cluster' not in minikube_delete.stderr"
-      failed_when: false # Ignore non-zero return code if no cluster exists
-      become: yes
-
-    - name: Start Minikube (Switching to the recommended Docker driver)
-      ansible.builtin.shell: |
-        minikube start --driver=none
-#        minikube start --driver=docker --force
-      register: minikube_start
-      changed_when: "'Done!' in minikube_start.stdout"
-
-    - name: Ensure kubeconfig is available for regular user
-      ansible.builtin.shell: |
-        mkdir -p ~/.kube
-        sudo cp -f /root/.kube/config ~/.kube/config
-        sudo chown $USER:$USER ~/.kube/config
-
-    - name: Set kubectl context to minikube
-      ansible.builtin.shell: kubectl config use-context minikube
+    - name: Start Minikube
+      shell: "minikube start"
+      become: false
       environment:
-        KUBECONFIG: "~/.kube/config"
+        CHANGE_MINIKUBE_NONE_USER: "true"
 
-      # (c) Deploy image from DockerHub
-    - name: Create Kubernetes Deployment
-      ansible.builtin.copy:
-        dest: /tmp/deployment.yaml
-        content: |
-          apiVersion: apps/v1
-          kind: Deployment
-          metadata:
-            name: {{ app_name }}
-          spec:
-            replicas: {{ replicas }}
-            selector:
-              matchLabels:
-                app: {{ app_name }}
-            template:
-              metadata:
-                labels:
-                  app: {{ app_name }}
-              spec:
-                containers:
-                - name: {{ app_name }}
-                  image: {{ docker_image }}
-                  ports:
-                  - containerPort: {{ container_port }}
-                  imagePullPolicy: Always
+    - name: Copy weather-app.yaml to server
+      copy:
+        src: weather-app.yaml
+        dest: /tmp/weather-app.yaml
 
-    - name: Apply Deployment
-      ansible.builtin.shell: kubectl apply -f /tmp/deployment.yaml
+    - name: Pause for 20 seconds
+      ansible.builtin.pause:
+        seconds: 5
 
-
-    # Service creation
-    - name: Create Kubernetes Service
-      ansible.builtin.copy:
-        dest: /tmp/service.yaml
-        content: |
-          apiVersion: v1
-          kind: Service
-          metadata:
-            name: {{ app_name }}-service
-          spec:
-            selector:
-              app: {{ app_name }}
-            ports:
-              - protocol: TCP
-                port: {{ service_port }}
-                targetPort: {{ container_port }}
-            type: NodePort
-
-    - name: Apply Service
-      ansible.builtin.shell: kubectl apply -f /tmp/service.yaml
+    - name: Apply weather app manifest
+      shell: "kubectl apply -f /tmp/weather-app.yaml"
+      become: false
+      environment:
+        CHANGE_MINIKUBE_NONE_USER: "true"
 
