@@ -45,39 +45,16 @@ jobs:
       - name: Push image to DockerHub
         run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
-#      - name: Copy kubernetes deployment manifest to EC2
-#        uses: appleboy/scp-action@v0.1.7
-#        with:
-#          host: ${{ secrets.EC2_HOST }}
-#          username: ubuntu
-#          key: ${{ secrets.EC2_SSH_KEY }}
-#          source: "k8s/deployment.yaml"
-#          target: "/tmp/deployment.yaml"
-#
-#      - name: Copy kubernetes service manifest to EC2
-#        uses: appleboy/scp-action@v0.1.7
-#        with:
-#          host: ${{ secrets.EC2_HOST }}
-#          username: ubuntu
-#          key: ${{ secrets.EC2_SSH_KEY }}
-#          source: "k8s/service.yaml"
-#          target: "/tmp/service.yaml"
-
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.5.0
+      - name: Copy kubernetes manifest to EC2
+        uses: appleboy/scp-action@v0.1.7
         with:
-          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
-
-      - name: Copy files to EC2
-        run: |
-          # Replace 'ec2-user' with your EC2 instance's username (e.g., ubuntu, centos)
-          # Replace 'your-ec2-ip' with your EC2 instance's public IP or DNS
-          # Replace '~/destination/path/' with the desired path on EC2
-          scp -r -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-            /tmp/ \
-            ubuntu@${{ secrets.EC2_HOST }}:~/k8s/*
-
-
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          password: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT }}
+          timeout: 60s
+          source: "k8s/deployment.yaml,k8s/service.yaml"
+          target: "/tmp"
 
       - name: Apply and restart deployment on EC2
         uses: appleboy/ssh-action@v1.0.3
