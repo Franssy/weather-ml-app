@@ -57,17 +57,28 @@
       environment:
         CHANGE_MINIKUBE_NONE_USER: "true"
 
-    - name: Copy weather-app.yaml to server
+    - name: Copy k8s/deployment.yaml to server
       copy:
-        src: weather-app.yaml
-        dest: /tmp/weather-app.yaml
+        src: k8s/deployment.yaml
+        dest: /tmp/deployment.yaml
 
-    - name: Pause for 20 seconds
+    - name: Copy k8s/service.yaml to server
+      copy:
+        src: k8s/service.yaml
+        dest: /tmp/service.yaml
+
+    - name: Pause for 5 seconds
       ansible.builtin.pause:
         seconds: 5
 
-    - name: Apply weather app manifest
-      shell: "kubectl apply -f /tmp/weather-app.yaml"
+    - name: Apply weather app Deployment
+      shell: "kubectl apply -f /tmp/deployment.yaml"
+      become: false
+      environment:
+        CHANGE_MINIKUBE_NONE_USER: "true"
+
+    - name: Apply weather app Service
+      shell: "kubectl apply -f /tmp/service.yaml"
       become: false
       environment:
         CHANGE_MINIKUBE_NONE_USER: "true"
