@@ -68,6 +68,6 @@ jobs:
           port: ${{ secrets.EC2_PORT }}
           timeout: 60s
           script: |
-            kubectl apply -f /tmp/deployment.yaml
-            kubectl apply -f /tmp/service.yaml
+            kubectl apply -f /tmp/k8s/deployment.yaml
+            kubectl apply -f /tmp/k8s/service.yaml
             kubectl rollout restart deployment weather-app
