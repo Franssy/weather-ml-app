@@ -49,67 +49,11 @@ minikube start
 
 sleep 5 # Waits for 5 seconds
 
-IMAGE_NAME="franssy/weather-predictor:latest" # e.g., myuser/my-web-app:v1
-APP_NAME="weather-app"
-CONTAINER_PORT=5000
-SERVICE_PORT=8080
-REPLICA_COUNT=3
-
-
-echo "Starting Kubernetes deployment process for image: ${IMAGE_NAME}"
-echo "--------------------------------------------------------"
-
-echo "1. Creating Kubernetes Deployment: ${APP_NAME}"
-
-kubectl create deployment ${APP_NAME} \
-    --image=${IMAGE_NAME} \
-    --port=${CONTAINER_PORT}
-
-if [ $? -ne 0 ]; then
-    echo "ERROR: Deployment creation failed. Exiting."
-    exit 1
-fi
-echo "Deployment '${APP_NAME}' created successfully."
-
-echo "---"
-
-echo "2. Creating Kubernetes Service for external access"
-
-
-kubectl expose deployment ${APP_NAME} \
-    --type=NodePort \
-    --name=${APP_NAME}-service \
-    --port=${SERVICE_PORT} \
-    --target-port=${CONTAINER_PORT} \
-    --labels="app=${APP_NAME}"
-
-if [ $? -ne 0 ]; then
-    echo "ERROR: Service creation failed. Exiting."
-    exit 1
-fi
-echo "Service '${APP_NAME}-service' created successfully (Type: NodePort)."
-
-echo "---"
-
-echo "3. Scaling deployment to ${REPLICA_COUNT} replicas for Rolling Updates"
-
-kubectl scale deployment ${APP_NAME} \
-    --replicas=${REPLICA_COUNT}
-
-if [ $? -ne 0 ]; then
-    echo "ERROR: Scaling deployment failed. You might want to check the deployment name."
-    exit 1
-fi
-echo "Deployment scaled to ${REPLICA_COUNT} replicas."
-
-echo "---"
-echo "Deployment Summary (wait a moment for resources to spin up):"
-kubectl get all -l app=${APP_NAME}
-
-NODE_PORT=$(kubectl get svc weather-app-service -o=jsonpath='{.spec.ports[*].nodePort}')
+kubectl apply -f weather-app.yaml
 
 sleep 20
-kubectl port-forward --address 0.0.0.0 service/weather-app-service "${NODE_PORT}":"${SERVICE_PORT}"
+
+kubectl port-forward --address 0.0.0.0 service/weather-app-service "30080":"8080"
 
 echo "Script finished successfully."
 
