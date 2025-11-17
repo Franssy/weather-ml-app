@@ -45,14 +45,23 @@ jobs:
       - name: Push image to DockerHub
         run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
-      - name: Copy kubernetes manifest to EC2
+      - name: Copy kubernetes deployment manifest to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "k8s/*"
-          target: "/tmp/*"
+          source: "k8s/deployment.yaml"
+          target: "/tmp/deployment.yaml"
+
+      - name: Copy kubernetes service manifest to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "k8s/service.yaml"
+          target: "/tmp/service.yaml"
 
       - name: Apply and restart deployment on EC2
         uses: appleboy/ssh-action@v1.0.3
