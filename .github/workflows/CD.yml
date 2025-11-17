@@ -15,7 +15,6 @@ env:
   REGISTRY: franssy
   IMAGE_NAME: weather-predictor
 
-
 jobs:
   deploy:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
