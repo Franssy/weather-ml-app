@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: weather-app
-          image: franssy/weather-predictor:v2
+          image: franssy/weather-predictor:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 5000
