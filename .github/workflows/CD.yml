@@ -80,14 +80,14 @@ jobs:
 
       - name: Pull Docker image 
 
-        run: sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/weather-app:v1
+        run: sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/weather-ml-app:v1
 
         # Remove the pulled docker container if it exists 
 
       - name: Delete Docker container 
 
-        run:  docker rm -f weather-app || true 
+        run:  docker rm -f weather-ml-app || true 
 
       - name: Run Docker container 
 
-        run: sudo docker container run --detach --publish 30380:5000 --name weather-app ${{ secrets.DOCKERHUB_USERNAME }}/weather-app:v1 
+        run: sudo docker container run --detach --publish 30380:5000 --name weather-ml-app ${{ secrets.DOCKERHUB_USERNAME }}/weather-ml-app:v1 
