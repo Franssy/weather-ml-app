@@ -56,8 +56,6 @@ jobs:
             kubectl rollout restart deployment weather-app
 
 
-# # Just checking if works
-
 name: CD 
 
 on: 
@@ -77,19 +75,13 @@ jobs:
     steps: 
 
       - name: Checkout code 
-
-        uses: actions/checkout@v4 
-
+        uses: actions/checkout@v4
       - name: Pull Docker image 
-
         run: sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/weather-ml-app:v1
 
         # Remove the pulled docker container if it exists 
 
       - name: Delete Docker container 
-
         run:  docker rm -f weather-ml-app || true 
-
       - name: Run Docker container 
-
-        run: sudo docker container run --detach --publish 30380:5000 --name weather-ml-app ${{ secrets.DOCKERHUB_USERNAME }}/weather-ml-app:v1 
+        run: sudo docker container run --detach --publish 30380:8080 --name weather-ml-app ${{ secrets.DOCKERHUB_USERNAME }}/weather-ml-app:v1 
