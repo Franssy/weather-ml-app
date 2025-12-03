@@ -156,7 +156,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Pull Docker image (latest)
-        run: sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/weather-ml-app:latest
+        run: sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/weather-predictor:latest
 
       - name: Delete Docker container if exists
         run: docker rm -f weather-ml-app || true
