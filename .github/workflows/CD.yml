@@ -92,4 +92,4 @@ jobs:
 
       - name: Run Docker container 
 
-        run: sudo docker container run --detach --publish 30380:5000 --name weather-ml-app ${{ secrets.DOCKERHUB_USERNAME }}/weather-ml-app:v1 
+        run: sudo docker container run --detach --publish 30380:8080 --name weather-ml-app ${{ secrets.DOCKERHUB_USERNAME }}/weather-ml-app:v1 
