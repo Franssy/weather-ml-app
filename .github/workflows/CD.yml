@@ -1,53 +1,95 @@
-name: CD
+# name: CD
 
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support documentation.
+# # This workflow uses actions that are not certified by GitHub.
+# # They are provided by a third-party and are governed by
+# # separate terms of service, privacy policy, and support documentation.
 
-on:
-  workflow_run:
-    workflows: ["CI"]
-    types:
-      - completed
+# on:
+#   workflow_run:
+#     workflows: ["CI"]
+#     types:
+#       - completed
 
-env:
-  REGISTRY: franssy
-  IMAGE_NAME: weather-predictor
+# env:
+#   REGISTRY: franssy
+#   IMAGE_NAME: weather-predictor
 
-jobs:
-  deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      actions: read
+# jobs:
+#   deploy:
+#     if: ${{ github.event.workflow_run.conclusion == 'success' }}
+#     runs-on: ubuntu-latest
+#     permissions:
+#       contents: read
+#       packages: write
+#       actions: read
 
-    steps:
+#     steps:
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
 
-      - name: Copy kubernetes manifest to EC2
-        uses: appleboy/scp-action@v1
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: ${{ secrets.EC2_PORT }}
-          timeout: 60s
-          source: "k8s/deployment.yaml,k8s/service.yaml"
-          target: "/tmp"
+#       - name: Copy kubernetes manifest to EC2
+#         uses: appleboy/scp-action@v1
+#         with:
+#           host: ${{ secrets.EC2_HOST }}
+#           username: ${{ secrets.EC2_USERNAME }}
+#           key: ${{ secrets.EC2_SSH_KEY }}
+#           port: ${{ secrets.EC2_PORT }}
+#           timeout: 60s
+#           source: "k8s/deployment.yaml,k8s/service.yaml"
+#           target: "/tmp"
 
-      - name: Apply and restart deployment on EC2
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: ${{ secrets.EC2_PORT }}
-          timeout: 60s
-          script: |
-            kubectl apply -f /tmp/k8s/deployment.yaml
-            kubectl apply -f /tmp/k8s/service.yaml
-            kubectl rollout restart deployment weather-app
+#       - name: Apply and restart deployment on EC2
+#         uses: appleboy/ssh-action@v1.0.3
+#         with:
+#           host: ${{ secrets.EC2_HOST }}
+#           username: ${{ secrets.EC2_USERNAME }}
+#           key: ${{ secrets.EC2_SSH_KEY }}
+
+
+
+#           port: ${{ secrets.EC2_PORT }}
+#           timeout: 60s
+#           script: |
+#             kubectl apply -f /tmp/k8s/deployment.yaml
+#             kubectl apply -f /tmp/k8s/service.yaml
+#             kubectl rollout restart deployment weather-app
+
+
+# Just checking if works
+
+name: CD 
+
+on: 
+
+  push: 
+
+    branches: 
+
+      - main 
+
+jobs: 
+
+  Deploy: 
+
+    runs-on: self-hosted 
+
+    steps: 
+
+      - name: Checkout code 
+
+        uses: actions/checkout@v4 
+
+      - name: Pull Docker image 
+
+        run: sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/weather-ml-app:v1
+
+        # Remove the pulled docker container if it exists 
+
+      - name: Delete Docker container 
+
+        run:  docker rm -f weather-ml-app || true 
+
+      - name: Run Docker container 
+
+        run: sudo docker container run --detach --publish 30380:5000 --name weather-ml-app ${{ secrets.DOCKERHUB_USERNAME }}/weather-ml-app:v1 
