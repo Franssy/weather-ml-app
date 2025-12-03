@@ -56,6 +56,8 @@
 #             kubectl rollout restart deployment weather-app
 
 
+# Just checking if works
+
 name: CD 
 
 on: 
