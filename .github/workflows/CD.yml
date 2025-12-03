@@ -101,11 +101,9 @@ name: CD
 on:
   workflow_run:
     workflows: ["CI"]
-    types:
-      - completed
+    types: [completed]
   push:
-    branches:
-      - main
+    branches: [main]
 
 env:
   REGISTRY: franssy
@@ -113,18 +111,18 @@ env:
 
 jobs:
   deploy-k8s:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    # Only check workflow_run when workflow_run exists
+    if: >
+      github.event_name == 'push' ||
+      github.event.workflow_run.conclusion == 'success'
+
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      actions: read
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Copy kubernetes manifest to EC2
+      - name: Copy kubernetes manifests to EC2
         uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -132,8 +130,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT }}
           timeout: 60s
-          source: "k8s/deployment.yaml,k8s/service.yaml"
-          target: "/tmp"
+          source: "k8s/"
+          target: "/tmp/k8s"
 
       - name: Apply and restart deployment on EC2
         uses: appleboy/ssh-action@v1.0.3
@@ -151,6 +149,7 @@ jobs:
   deploy-docker:
     runs-on: self-hosted
     needs: deploy-k8s
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -158,8 +157,12 @@ jobs:
       - name: Pull Docker image (latest)
         run: sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/weather-predictor:latest
 
-      - name: Delete Docker container if exists
-        run: docker rm -f weather-ml-app || true
+      - name: Delete existing container if exists
+        run: sudo docker rm -f weather-ml-app || true
 
       - name: Run Docker container
-        run: sudo docker container run --detach --publish 30380:5000 --name weather-ml-app ${{ secrets.DOCKERHUB_USERNAME }}/weather-ml-app:latest
+        run: |
+          sudo docker run -d \
+            -p 30380:5000 \
+            --name weather-ml-app \
+            ${{ secrets.DOCKERHUB_USERNAME }}/weather-predictor:latest
