@@ -155,11 +155,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Pull Docker image
-        run: sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/weather-ml-app:v1
+      - name: Pull Docker image (latest)
+        run: sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/weather-ml-app:latest
 
       - name: Delete Docker container if exists
         run: docker rm -f weather-ml-app || true
 
       - name: Run Docker container
-        run: sudo docker container run --detach --publish 30380:5000 --name weather-ml-app ${{ secrets.DOCKERHUB_USERNAME }}/weather-ml-app:v1
+        run: sudo docker container run --detach --publish 30380:5000 --name weather-ml-app ${{ secrets.DOCKERHUB_USERNAME }}/weather-ml-app:latest
