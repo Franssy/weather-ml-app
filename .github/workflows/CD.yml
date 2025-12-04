@@ -18,6 +18,7 @@ jobs:
   deploy:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       contents: read
       packages: write
@@ -54,34 +55,3 @@ jobs:
             kubectl apply -f /tmp/k8s/deployment.yaml
             kubectl apply -f /tmp/k8s/service.yaml
             kubectl rollout restart deployment weather-app
-
-
-# name: CD 
-
-# on: 
-
-#   push: 
-
-#     branches: 
-
-#       - main 
-
-# jobs: 
-
-#   Deploy: 
-
-#     runs-on: self-hosted 
-
-#     steps: 
-
-#       - name: Checkout code 
-#         uses: actions/checkout@v4
-#       - name: Pull Docker image 
-#         run: sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/weather-ml-app:v1
-
-#         # Remove the pulled docker container if it exists 
-
-#       - name: Delete Docker container 
-#         run:  docker rm -f weather-ml-app || true 
-#       - name: Run Docker container 
-#         run: sudo docker container run --detach --publish 30380:8080 --name weather-ml-app ${{ secrets.DOCKERHUB_USERNAME }}/weather-ml-app:v1 
